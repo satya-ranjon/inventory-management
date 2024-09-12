@@ -11,10 +11,12 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 
+app.get("/", (_req, res) => {
+  res.send("Server is running...");
+});
 // Handle 404 Not Found
 app.use(notFoundHandler);
 

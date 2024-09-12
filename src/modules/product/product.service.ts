@@ -8,11 +8,9 @@ class ProductService {
     // Validate the product data with Zod
     const validationResult = ProductSchemaValidation.safeParse(productData);
 
-    // If the validation fails, throw an error with the issues
     if (!validationResult.success) {
       throw new Error(JSON.stringify(validationResult.error.issues));
     }
-    // Save the validated data to the database
     const product = new Product(validationResult.data);
     return await product.save();
   }
@@ -22,28 +20,57 @@ class ProductService {
   }
 
   async getProductById(productId: string) {
-    return await Product.findById(productId);
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    return product;
   }
 
   async updateProduct(
     productId: string,
     productData: z.infer<typeof ProductSchemaValidation>
   ) {
-    // Validate the product data with Zod
     const validationResult = ProductSchemaValidation.safeParse(productData);
 
-    // If the validation fails, throw an error with the issues
     if (!validationResult.success) {
       throw new Error(JSON.stringify(validationResult.error.issues));
     }
-    // Update the product in the database
-    return await Product.findByIdAndUpdate(productId, productData, {
-      new: true,
-    });
+    const updatedProduct = await Product.findByIdAndUpdate(
+      productId,
+      productData,
+      {
+        new: true,
+      }
+    );
+    if (!updatedProduct) {
+      throw new Error("Product not found");
+    }
+    return updatedProduct;
   }
 
   async deleteProduct(productId: string) {
-    return await Product.findByIdAndUpdate(productId, { deleted: true });
+    const product = await Product.findByIdAndDelete(productId);
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    return product;
+  }
+
+  async searchProductByName(name: string) {
+    // Using MongoDB regular expressions for case-insensitive search
+    const products = await Product.find({
+      name: { $regex: name, $options: "i" },
+    });
+
+    if (products.length === 0) {
+      throw new Error("No products found");
+    }
+
+    return products;
   }
 }
 

@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import OrderSchemaValidation from "./order.validation";
 import orderService from "./order.service";
 import { Types } from "mongoose";
+import productService from "../product/product.service";
 
 class OrderController {
   async createOrder(req: Request, res: Response) {
@@ -27,10 +28,9 @@ class OrderController {
         data: newOrder,
       });
     } catch (error: any) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
-        message: "Failed to create order",
-        error: error.message,
+        message: error.message,
       });
     }
   }
